@@ -1,31 +1,83 @@
-// I made these. I noticed every lab in the past (booklist, pokemon, toytale)
 const BASE_URL = "http://localhost:3000"
-let dogTable = document.getElementById("table-body");
 
-// this was here, I just added renderAllDogs
  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelector('#dog-form').addEventListener('submit', handleEditForm)
 renderAllDogs()
  })
 
-// this is where it gets wild. The readMe wants this info in a table.
-// the array prints out to the console, but nothing changes 
-// on the page
 function renderAllDogs() {
     fetch(`${BASE_URL}/dogs`)
     .then(resp => resp.json())
-    .then(data => {console.log(data)
+    .then(data => {
         data.forEach(function(dog){
+            const dogTable = document.getElementById("table-body");
             const tableRow = document.createElement('tr')
-            const tableData = document.createElement('td')
             tableRow.setAttribute('class', 'tablerow')
-            tableData.setAttribute('class', 'tabledata')
-            tableRow.dataset.id = dog.id;
-            tableData.textContent = dog.name;
-            tableData.textContent = dog.breed;
-            tableData.textContent = dog.sex;
+            const name = document.createElement('td')
+            name.setAttribute('class', 'name')
+            // name.dataset.id = dog.id;
+            name.textContent = dog.name;
+            const breed = document.createElement('td')
+            breed.setAttribute('class', 'breed')
+            // breed.dataset.id = dog.id;
+            breed.textContent = dog.breed;
+            const sex = document.createElement('td')
+            sex.setAttribute('class', 'sex')
+            // sex.dataset.id = dog.id;
+            sex.textContent = dog.sex;
+            const edit = document.createElement('button')
+            edit.setAttribute('class', 'bttn')
+            edit.dataset.id = dog.id;
+            edit.innerHTML = "Edit Dog";
+            edit.addEventListener('click', handleEditDog)
             dogTable.appendChild(tableRow);
-            dogTable.appendChild(tableData);
+            dogTable.appendChild(name);
+            dogTable.appendChild(breed);
+            dogTable.appendChild(sex);
+            dogTable.appendChild(edit);
         })
     }) 
 }
+
+function handleEditDog(e){
+    e.preventDefault()
+    const row = e.target.parentNode
+    const editForm = document.querySelector('#dog-form')
+    
+    editForm.elements["name"].value = row.querySelector('.name').textContent
+    editForm.elements["breed"].value = row.querySelector('.breed').textContent
+    editForm.elements["sex"].value = row.querySelector('.sex').textContent
+    editForm.dataset.id = event.target.dataset.id
+}
+
+function handleEditForm(e) {
+    e.preventDefault()
+    const dogName = e.target.elements["name"].value
+    const dogBreed = e.target.elements["breed"].value
+    const dogSex = e.target.elements["sex"].value
+
+    newDog = {
+        name: dogName,
+        breed: dogBreed,
+        sex: dogSex
+    }
+    
+    const id = e.target.dataset.id
+    fetch(`${BASE_URL}/dogs/${id}`, {
+        headers:{
+            'Content-Type': 'application/json'
+        },
+        method:'PATCH',
+        body: JSON.stringify(newDog)
+    })
+    .then(function() {
+        const dogList = document.getElementById('table-body')
+        dogList.innerHTML = ""
+        
+        
+    renderAllDogs()}) 
+    e.target.reset()
+}
+
+
 
